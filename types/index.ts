@@ -1,0 +1,11 @@
+export type UserRole = 'STUDENT' | 'INSTRUCTOR' | 'MENTOR' | 'ORGANIZATION' | 'SUPER_ADMIN';
+export type UserStatus = 'ACTIVE' | 'SUSPENDED';
+export type CourseStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED';
+export type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+export type EnrollmentStatus = 'ACTIVE' | 'COMPLETED';
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+export type VerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'MORE_INFORMATION_REQUIRED';
+export type QuestionType = 'MCQ' | 'MULTIPLE_ANSWER' | 'TRUE_FALSE' | 'SHORT_ANSWER';
+export type ProductType = 'COURSE' | 'EBOOK' | 'STUDY_MATERIAL' | 'TEMPLATE' | 'PRACTICE_TEST' | 'INTERVIEW_PACKAGE';
+export type ReportTarget = 'POST' | 'COMMENT' | 'USER';
