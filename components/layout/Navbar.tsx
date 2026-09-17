@@ -6,6 +6,7 @@ import { BookOpen, ShoppingBag, Bell, User, LogOut, Menu, Shield, GraduationCap,
 import { Button } from '@/components/ui/Button';
 import { useUIStore } from '@/store/useUIStore';
 import { useCartStore } from '@/store/useCartStore';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Navbar() {
   const { data: session } = useSession();
@@ -71,8 +72,9 @@ export function Navbar() {
 
           {/* Right Action Items */}
           <div className="flex items-center gap-3">
-            {/* Cart Link */}
-            <Link href="/marketplace" className="relative p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition-colors">
+            {/* Theme Toggle & Cart Link */}
+            <ThemeToggle />
+            <Link href="/marketplace" className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
               <ShoppingBag className="w-5 h-5" />
               {cartItems.length > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 bg-brand-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center">

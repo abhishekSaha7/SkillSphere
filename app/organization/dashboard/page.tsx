@@ -5,10 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 
 export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function OrganizationDashboardPage() {
-  const instructors = await db.user.findMany({ where: { role: 'INSTRUCTOR' } });
-  const courses = await db.course.findMany({ where: { status: 'PUBLISHED' } });
+  let instructors: any[] = [];
+  let courses: any[] = [];
+
+  try {
+    instructors = await db.user.findMany({ where: { role: 'INSTRUCTOR' } });
+    courses = await db.course.findMany({ where: { status: 'PUBLISHED' } });
+  } catch (error) {
+    console.error('Database connection error in OrganizationDashboard:', error);
+  }
 
   return (
     <div className="space-y-8">
@@ -27,7 +35,7 @@ export default async function OrganizationDashboardPage() {
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Affiliated Instructors</p>
-            <p className="text-2xl font-extrabold text-slate-900">{instructors.length}</p>
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-white">{instructors.length}</p>
           </div>
         </Card>
 
@@ -37,7 +45,7 @@ export default async function OrganizationDashboardPage() {
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Enterprise Courses</p>
-            <p className="text-2xl font-extrabold text-slate-900">{courses.length}</p>
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-white">{courses.length}</p>
           </div>
         </Card>
 
@@ -47,7 +55,7 @@ export default async function OrganizationDashboardPage() {
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Enrolled Students</p>
-            <p className="text-2xl font-extrabold text-slate-900">420</p>
+            <p className="text-2xl font-extrabold text-slate-900 dark:text-white">420</p>
           </div>
         </Card>
       </div>

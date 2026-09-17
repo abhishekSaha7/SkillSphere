@@ -14,18 +14,25 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/organization') ||
     pathname.startsWith('/admin');
 
+  const getDashboardByRole = (role: string) => {
+    if (role === 'STUDENT') return '/student/dashboard';
+    if (role === 'INSTRUCTOR') return '/instructor/dashboard';
+    if (role === 'MENTOR') return '/mentor/dashboard';
+    if (role === 'ORGANIZATION') return '/organization/dashboard';
+    if (role === 'SUPER_ADMIN') return '/admin/dashboard';
+    return '/student/dashboard';
+  };
+
+  // 1. Logged in user visiting auth pages (/login, /register)
   if (isAuthRoute) {
     if (token) {
-      const role = token.role as string;
-      if (role === 'STUDENT') return NextResponse.redirect(new URL('/student/dashboard', req.url));
-      if (role === 'INSTRUCTOR') return NextResponse.redirect(new URL('/instructor/dashboard', req.url));
-      if (role === 'MENTOR') return NextResponse.redirect(new URL('/mentor/dashboard', req.url));
-      if (role === 'ORGANIZATION') return NextResponse.redirect(new URL('/organization/dashboard', req.url));
-      if (role === 'SUPER_ADMIN') return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+      const targetDashboard = getDashboardByRole(token.role as string);
+      return NextResponse.redirect(new URL(targetDashboard, req.url));
     }
     return NextResponse.next();
   }
 
+  // 2. Protected portal routes
   if (isProtected) {
     if (!token) {
       const loginUrl = new URL('/login', req.url);
@@ -35,20 +42,21 @@ export async function middleware(req: NextRequest) {
 
     const role = token.role as string;
 
-    if (pathname.startsWith('/student') && (role as string) !== 'STUDENT' && (role as string) !== 'SUPER_ADMIN') {
-      return NextResponse.redirect(new URL('/', req.url));
+    // Verify role permissions per route section
+    if (pathname.startsWith('/student') && role !== 'STUDENT' && role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL(getDashboardByRole(role), req.url));
     }
-    if (pathname.startsWith('/instructor') && (role as string) !== 'INSTRUCTOR' && (role as string) !== 'SUPER_ADMIN') {
-      return NextResponse.redirect(new URL('/', req.url));
+    if (pathname.startsWith('/instructor') && role !== 'INSTRUCTOR' && role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL(getDashboardByRole(role), req.url));
     }
-    if (pathname.startsWith('/mentor') && (role as string) !== 'MENTOR' && (role as string) !== 'SUPER_ADMIN') {
-      return NextResponse.redirect(new URL('/', req.url));
+    if (pathname.startsWith('/mentor') && role !== 'MENTOR' && role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL(getDashboardByRole(role), req.url));
     }
-    if (pathname.startsWith('/organization') && (role as string) !== 'ORGANIZATION' && (role as string) !== 'SUPER_ADMIN') {
-      return NextResponse.redirect(new URL('/', req.url));
+    if (pathname.startsWith('/organization') && role !== 'ORGANIZATION' && role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL(getDashboardByRole(role), req.url));
     }
-    if (pathname.startsWith('/admin') && (role as string) !== 'SUPER_ADMIN') {
-      return NextResponse.redirect(new URL('/', req.url));
+    if (pathname.startsWith('/admin') && role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL(getDashboardByRole(role), req.url));
     }
   }
 

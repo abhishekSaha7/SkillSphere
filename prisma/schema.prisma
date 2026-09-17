@@ -3,8 +3,83 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  MENTOR
+  ORGANIZATION
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  MORE_INFORMATION_REQUIRED
+}
+
+enum QuestionType {
+  MCQ
+  MULTIPLE_ANSWER
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+enum ProductType {
+  COURSE
+  EBOOK
+  STUDY_MATERIAL
+  TEMPLATE
+  PRACTICE_TEST
+  INTERVIEW_PACKAGE
+}
+
+enum ReportTarget {
+  POST
+  COMMENT
+  USER
 }
 
 model User {
@@ -13,15 +88,15 @@ model User {
   passwordHash  String
   name          String
   avatar        String?
-  role          String      @default("STUDENT") // STUDENT, INSTRUCTOR, MENTOR, ORGANIZATION, SUPER_ADMIN
-  status        String      @default("ACTIVE")  // ACTIVE, SUSPENDED
+  role          UserRole    @default(STUDENT)
+  status        UserStatus  @default(ACTIVE)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   // Profiles
-  studentProfile     StudentProfile?
-  instructorProfile  InstructorProfile?
-  mentorProfile      MentorProfile?
+  studentProfile      StudentProfile?
+  instructorProfile   InstructorProfile?
+  mentorProfile       MentorProfile?
   organizationProfile OrganizationProfile?
 
   // Relations
@@ -40,6 +115,10 @@ model User {
   kycDocuments       KYCDocument[]
   reportsSubmitted   Report[]           @relation("Reporter")
   auditLogs          AuditLog[]
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
 }
 
 model StudentProfile {
@@ -102,9 +181,9 @@ model Course {
   description  String
   thumbnail    String?
   category     String
-  level        String       @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  level        CourseLevel  @default(BEGINNER)
   price        Float        @default(0.0)
-  status       String       @default("DRAFT")    // DRAFT, PENDING_REVIEW, PUBLISHED, REJECTED
+  status       CourseStatus @default(DRAFT)
   instructorId String
   instructor   User         @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
   createdAt    DateTime     @default(now())
@@ -115,6 +194,10 @@ model Course {
   assessments  Assessment[]
   certificates Certificate[]
   discussions  Discussion[]
+
+  @@index([instructorId])
+  @@index([category])
+  @@index([status])
 }
 
 model CourseModule {
@@ -127,6 +210,8 @@ model CourseModule {
   updatedAt DateTime @updatedAt
 
   lessons   Lesson[]
+
+  @@index([courseId])
 }
 
 model Lesson {
@@ -143,21 +228,25 @@ model Lesson {
   updatedAt   DateTime     @updatedAt
 
   progress    LearningProgress[]
+
+  @@index([moduleId])
 }
 
 model Enrollment {
-  id          String   @id @default(uuid())
+  id          String           @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  status      String   @default("ACTIVE") // ACTIVE, COMPLETED
-  enrolledAt  DateTime @default(now())
+  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status      EnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime         @default(now())
   completedAt DateTime?
 
   progress    LearningProgress[]
 
   @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
 }
 
 model LearningProgress {
@@ -170,6 +259,7 @@ model LearningProgress {
   completedAt  DateTime?
 
   @@unique([enrollmentId, lessonId])
+  @@index([enrollmentId])
 }
 
 model Assessment {
@@ -183,16 +273,20 @@ model Assessment {
 
   questions    Question[]
   attempts     AssessmentAttempt[]
+
+  @@index([courseId])
 }
 
 model Question {
-  id            String     @id @default(uuid())
+  id            String       @id @default(uuid())
   assessmentId  String
-  assessment    Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  assessment    Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   questionText  String
-  questionType  String     @default("MCQ") // MCQ, MULTIPLE_ANSWER, TRUE_FALSE, SHORT_ANSWER
+  questionType  QuestionType @default(MCQ)
   options       String
   correctAnswer String
+
+  @@index([assessmentId])
 }
 
 model AssessmentAttempt {
@@ -204,6 +298,9 @@ model AssessmentAttempt {
   score        Int
   passed       Boolean
   createdAt    DateTime   @default(now())
+
+  @@index([userId])
+  @@index([assessmentId])
 }
 
 model Certificate {
@@ -214,6 +311,10 @@ model Certificate {
   courseId        String
   course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   issuedAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([certificateCode])
 }
 
 model MentorAvailability {
@@ -224,6 +325,8 @@ model MentorAvailability {
   startTime    String
   endTime      String
   slotDuration Int           @default(60)
+
+  @@index([mentorId])
 }
 
 model MentorBooking {
@@ -236,39 +339,48 @@ model MentorBooking {
   timeSlot    String
   sessionType String        @default("1-on-1 Mentorship")
   fee         Float
-  status      String        @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
+  status      BookingStatus @default(PENDING)
   meetingUrl  String?
   notes       String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  @@index([studentId])
+  @@index([mentorId])
+  @@index([date])
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   title       String
   description String
-  productType String   @default("EBOOK") // COURSE, EBOOK, STUDY_MATERIAL, TEMPLATE, PRACTICE_TEST, INTERVIEW_PACKAGE
+  productType ProductType @default(EBOOK)
   price       Float
   fileUrl     String?
   sellerId    String
-  seller      User     @relation("ProductSeller", fields: [sellerId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  seller      User        @relation("ProductSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   orderItems  OrderItem[]
+
+  @@index([sellerId])
+  @@index([productType])
 }
 
 model Order {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   totalAmount Float
-  status      String   @default("PENDING") // PENDING, COMPLETED, FAILED
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      PaymentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   items       OrderItem[]
   payments    Payment[]
+
+  @@index([userId])
 }
 
 model OrderItem {
@@ -278,17 +390,23 @@ model OrderItem {
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   price     Float
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Payment {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   orderId       String
-  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
   amount        Float
-  provider      String   @default("MOCK")
-  status        String   @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
-  transactionId String   @default(uuid())
-  createdAt     DateTime @default(now())
+  provider      String        @default("MOCK")
+  status        PaymentStatus @default(PENDING)
+  transactionId String        @default(uuid())
+  createdAt     DateTime      @default(now())
+
+  @@index([orderId])
+  @@index([transactionId])
 }
 
 model Discussion {
@@ -303,6 +421,9 @@ model Discussion {
   updatedAt DateTime @updatedAt
 
   comments  Comment[]
+
+  @@index([authorId])
+  @@index([courseId])
 }
 
 model Comment {
@@ -313,6 +434,9 @@ model Comment {
   author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content      String
   createdAt    DateTime   @default(now())
+
+  @@index([discussionId])
+  @@index([authorId])
 }
 
 model Message {
@@ -324,6 +448,9 @@ model Message {
   content    String
   isRead     Boolean  @default(false)
   createdAt  DateTime @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
 }
 
 model Notification {
@@ -335,29 +462,36 @@ model Notification {
   link      String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model KYCDocument {
-  id           String   @id @default(uuid())
+  id           String             @id @default(uuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   documentType String
   fileUrl      String
-  status       String   @default("PENDING") // PENDING, APPROVED, REJECTED, MORE_INFORMATION_REQUIRED
+  status       VerificationStatus @default(PENDING)
   notes        String?
-  submittedAt  DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  submittedAt  DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 model Report {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   reporterId String
-  reporter   User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  targetType String   // POST, COMMENT, USER
+  reporter   User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType ReportTarget
   targetId   String
   reason     String
-  status     String   @default("PENDING")
-  createdAt  DateTime @default(now())
+  status     String       @default("PENDING")
+  createdAt  DateTime     @default(now())
+
+  @@index([reporterId])
 }
 
 model AuditLog {
@@ -367,4 +501,6 @@ model AuditLog {
   action    String
   details   String?
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }

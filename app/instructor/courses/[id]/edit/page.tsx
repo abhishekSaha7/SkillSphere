@@ -28,7 +28,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   const [lessonVideoUrl, setLessonVideoUrl] = useState('');
   const [lessonDuration, setLessonDuration] = useState(15);
 
-  const fetchCourse = async () => {
+  const fetchCourse = React.useCallback(async () => {
     try {
       const res = await fetch(`/api/courses/${params.id}`);
       const data = await res.json();
@@ -40,11 +40,11 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
     fetchCourse();
-  }, [params.id]);
+  }, [fetchCourse]);
 
   const handleAddModule = async (e: React.FormEvent) => {
     e.preventDefault();

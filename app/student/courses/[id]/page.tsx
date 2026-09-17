@@ -19,7 +19,7 @@ export default function StudentCoursePlayerPage({ params }: { params: { id: stri
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchWorkspace = async () => {
+  const fetchWorkspace = React.useCallback(async () => {
     try {
       // Fetch course details
       const courseRes = await fetch(`/api/courses/${params.id}`);
@@ -49,11 +49,11 @@ export default function StudentCoursePlayerPage({ params }: { params: { id: stri
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
     fetchWorkspace();
-  }, [params.id]);
+  }, [fetchWorkspace]);
 
   const toggleLessonCompletion = async (lessonId: string) => {
     if (!enrollment) return;
