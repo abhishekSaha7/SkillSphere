@@ -4,11 +4,17 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ShoppingBag, Trash2, ArrowLeft, CheckCircle2, ShieldCheck, Download } from 'lucide-react';
+import { ShoppingBag, Trash2, ArrowLeft, CheckCircle2, ShieldCheck, Download, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { useCartStore } from '@/store/useCartStore';
 import { useUIStore } from '@/store/useUIStore';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function CartPage() {
   const router = useRouter();
@@ -19,6 +25,21 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<any>(null);
 
+  // Dynamically load Razorpay Checkout Script
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window !== 'undefined' && window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleCheckout = async () => {
     if (!session) {
       router.push('/login?callbackUrl=/marketplace/cart');
@@ -27,6 +48,7 @@ export default function CartPage() {
 
     setIsLoading(true);
     try {
+      // 1. Send Order request to backend
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,10 +58,83 @@ export default function CartPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Checkout failed');
 
+      // 2. If Razorpay modal execution is required
+      if (data.requiresRazorpayModal) {
+        const isLoaded = await loadRazorpayScript();
+        if (!isLoaded) {
+          throw new Error('Razorpay SDK failed to load. Check your internet connection.');
+        }
+
+        const options = {
+          key: data.keyId,
+          amount: data.amountInPaise,
+          currency: data.currency || 'INR',
+          name: 'SkillSphere',
+          description: 'Digital Marketplace Checkout',
+          image: '/logo.png',
+          order_id: data.razorpayOrderId,
+          prefill: {
+            name: session.user?.name || '',
+            email: session.user?.email || '',
+          },
+          theme: {
+            color: '#4f46e5', // Brand color
+          },
+          handler: async (response: any) => {
+            try {
+              setIsLoading(true);
+              // Verify Razorpay payment on server
+              const verifyRes = await fetch('/api/payments/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  orderId: data.orderId,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpaySignature: response.razorpay_signature,
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+              if (!verifyRes.ok) throw new Error(verifyData.error || 'Verification failed');
+
+              addToast({
+                type: 'success',
+                title: 'Razorpay Payment Verified!',
+                message: 'Your order was successfully completed with Razorpay.',
+              });
+
+              setCompletedOrder({
+                orderId: verifyData.orderId,
+                transactionId: verifyData.transactionId,
+                items: [...items],
+              });
+
+              clearCart();
+            } catch (err: any) {
+              addToast({ type: 'error', title: 'Payment Verification Error', message: err.message });
+            } finally {
+              setIsLoading(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setIsLoading(false);
+              addToast({ type: 'error', title: 'Payment Cancelled', message: 'You closed the Razorpay payment modal.' });
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+        return;
+      }
+
+      // 3. Fallback Mock payment completion
       addToast({
         type: 'success',
-        title: 'Mock Payment Successful!',
-        message: 'Order created without requiring real credit cards.',
+        title: 'Payment Successful!',
+        message: 'Order created successfully.',
       });
 
       setCompletedOrder({
@@ -156,12 +251,12 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <Button onClick={handleCheckout} isLoading={isLoading} className="w-full py-3 font-bold">
-                Complete Mock Payment (${totalAmount().toFixed(2)})
+              <Button onClick={handleCheckout} isLoading={isLoading} className="w-full py-3 font-bold flex items-center justify-center gap-2">
+                <CreditCard className="w-4 h-4" /> Checkout Now (${totalAmount().toFixed(2)})
               </Button>
 
               <p className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Mock payment abstraction active
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Secure Payment Gateway Active
               </p>
             </Card>
           </div>

@@ -3,7 +3,7 @@ import { GraduationCap } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 text-sm">
+    <footer className="bg-slate-900 dark:bg-slate-950 text-slate-400 border-t border-slate-800 text-sm transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
@@ -49,7 +49,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-          &copy; {new Date().getFullYear()} SkillSphere Platform. All rights reserved. Portfolio & Educational Architecture.
+          &copy; {new Date().getFullYear()} SkillSphere Platform. All rights reserved. Educational Architecture.
         </div>
       </div>
     </footer>

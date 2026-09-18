@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
-import { ShoppingBag, FileText, CheckCircle2, Download } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { AddToCartButton } from './AddToCartButton';
 
@@ -29,7 +29,7 @@ export default async function MarketplacePage({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-slate-900 text-white rounded-2xl p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white rounded-2xl p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="max-w-2xl space-y-3">
           <Badge variant="info" className="bg-brand-950 text-brand-300 border-brand-800">
             Digital Products Marketplace
@@ -67,15 +67,15 @@ export default async function MarketplacePage({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Badge variant="info">{prod.productType.replace('_', ' ')}</Badge>
-                <span className="text-xl font-extrabold text-slate-900">${prod.price.toFixed(2)}</span>
+                <span className="text-xl font-extrabold text-slate-900 dark:text-white">${prod.price.toFixed(2)}</span>
               </div>
 
-              <h3 className="font-bold text-slate-900 text-lg leading-snug">{prod.title}</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">{prod.description}</p>
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg leading-snug">{prod.title}</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{prod.description}</p>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-xs text-slate-500">By <strong className="text-slate-700">{prod.seller.name}</strong></span>
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <span className="text-xs text-slate-500 dark:text-slate-400">By <strong className="text-slate-700 dark:text-slate-200">{prod.seller.name}</strong></span>
               <AddToCartButton product={prod} />
             </div>
           </Card>

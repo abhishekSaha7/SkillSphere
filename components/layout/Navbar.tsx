@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { BookOpen, ShoppingBag, Bell, User, LogOut, Menu, Shield, GraduationCap, Users, LayoutDashboard } from 'lucide-react';
+import { BookOpen, ShoppingBag, LogOut, Menu, GraduationCap, Users, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useUIStore } from '@/store/useUIStore';
 import { useCartStore } from '@/store/useCartStore';
@@ -25,7 +25,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & Mobile Menu Toggle */}
@@ -33,7 +33,7 @@ export function Navbar() {
             {session && (
               <button
                 onClick={toggleSidebar}
-                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg lg:hidden"
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg lg:hidden"
                 aria-label="Toggle navigation menu"
               >
                 <Menu className="w-5 h-5" />
@@ -44,10 +44,10 @@ export function Navbar() {
                 <GraduationCap className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-brand-900 to-brand-600">
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-brand-900 to-brand-600 dark:from-white dark:via-brand-300 dark:to-brand-400">
                   SkillSphere
                 </span>
-                <span className="hidden sm:block text-[10px] uppercase tracking-wider text-slate-500 font-semibold -mt-1">
+                <span className="hidden sm:block text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold -mt-1">
                   Learning & Mentorship
                 </span>
               </div>
@@ -55,17 +55,17 @@ export function Navbar() {
           </div>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-            <Link href="/courses" className="hover:text-brand-600 transition-colors flex items-center gap-1.5">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <Link href="/courses" className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors flex items-center gap-1.5">
               <BookOpen className="w-4 h-4" /> Courses
             </Link>
-            <Link href="/mentors" className="hover:text-brand-600 transition-colors flex items-center gap-1.5">
+            <Link href="/mentors" className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors flex items-center gap-1.5">
               <Users className="w-4 h-4" /> Mentors
             </Link>
-            <Link href="/marketplace" className="hover:text-brand-600 transition-colors flex items-center gap-1.5">
+            <Link href="/marketplace" className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors flex items-center gap-1.5">
               <ShoppingBag className="w-4 h-4" /> Marketplace
             </Link>
-            <Link href="/discussions" className="hover:text-brand-600 transition-colors">
+            <Link href="/discussions" className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
               Discussions
             </Link>
           </nav>
@@ -87,22 +87,22 @@ export function Navbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href={getDashboardLink()}
-                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg border border-brand-200 transition-colors"
+                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-100 dark:hover:bg-brand-900/80 rounded-lg border border-brand-200 dark:border-brand-800 transition-colors"
                 >
                   <LayoutDashboard className="w-4 h-4" /> Dashboard
                 </Link>
 
-                <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
-                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+                <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-brand-600 text-white flex items-center justify-center font-bold text-xs">
                     {session.user.name?.[0] || 'U'}
                   </div>
                   <div className="hidden lg:block text-left">
-                    <p className="text-xs font-semibold text-slate-900 leading-tight">{session.user.name}</p>
-                    <p className="text-[10px] font-medium text-slate-500 capitalize">{session.user.role.toLowerCase()}</p>
+                    <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">{session.user.name}</p>
+                    <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 capitalize">{session.user.role.toLowerCase()}</p>
                   </div>
                   <button
                     onClick={() => signOut({ callbackUrl: '/login' })}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     title="Sign Out"
                   >
                     <LogOut className="w-4 h-4" />

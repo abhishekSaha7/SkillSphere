@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     const totalAmount = items.reduce((sum: number, item: any) => sum + item.price, 0);
 
-    // 1. Create Order
+    // 1. Create Order in Database (PENDING status)
     const order = await db.order.create({
       data: {
         userId: session.user.id,
@@ -37,10 +37,24 @@ export async function POST(req: Request) {
     const paymentResult = await PaymentService.processPayment({
       orderId: order.id,
       amount: totalAmount,
+      userEmail: session.user.email || undefined,
+      userName: session.user.name || undefined,
     });
 
+    // If Razorpay requires client popup modal execution
+    if (paymentResult.requiresRazorpayModal) {
+      return NextResponse.json({
+        requiresRazorpayModal: true,
+        orderId: order.id,
+        razorpayOrderId: paymentResult.razorpayOrderId,
+        amountInPaise: paymentResult.amountInPaise,
+        currency: paymentResult.currency,
+        keyId: paymentResult.keyId,
+      });
+    }
+
     if (paymentResult.success) {
-      // Update Order & Record Payment
+      // Mock payment completed immediately
       await db.order.update({
         where: { id: order.id },
         data: { status: 'COMPLETED' },
@@ -56,7 +70,6 @@ export async function POST(req: Request) {
         },
       });
 
-      // Notification
       await db.notification.create({
         data: {
           userId: session.user.id,
@@ -76,6 +89,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Payment processing failed' }, { status: 400 });
     }
   } catch (error: any) {
+    console.error('[Orders API Error]', error);
     return NextResponse.json({ error: error.message || 'Checkout failed' }, { status: 500 });
   }
 }
