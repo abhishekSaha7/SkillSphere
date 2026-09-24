@@ -31,30 +31,30 @@ export default function InstructorProfilePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Instructor Profile & KYC Verification</h1>
-        <p className="text-xs text-slate-500 mt-1">Submit official qualifications and identity credentials for platform approval.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Instructor Profile & KYC Verification</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Submit official qualifications and identity credentials for platform approval.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-bold flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-purple-600" /> Submit Identity / Qualification Document
+          <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+            <ShieldCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" /> Submit Identity / Qualification Document
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <form onSubmit={handleKYCSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Document Type
               </label>
               <select
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white"
               >
-                <option value="University Degree">University Degree</option>
-                <option value="Professional License / Certification">Professional License / Certification</option>
-                <option value="Government Passport / ID Card">Government Passport / ID Card</option>
+                <option value="University Degree" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">University Degree</option>
+                <option value="Professional License / Certification" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Professional License / Certification</option>
+                <option value="Government Passport / ID Card" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Government Passport / ID Card</option>
               </select>
             </div>
 

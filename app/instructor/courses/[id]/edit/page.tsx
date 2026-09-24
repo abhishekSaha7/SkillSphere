@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Plus, PlayCircle, Trash2, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Plus, PlayCircle, Trash2, Edit, ArrowLeft, Send, CheckCircle2, HelpCircle, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -21,12 +21,19 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
   const [moduleTitle, setModuleTitle] = useState('');
 
-  // Lesson Modal State
+  // Add Lesson Modal State
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const [lessonTitle, setLessonTitle] = useState('');
   const [lessonVideoUrl, setLessonVideoUrl] = useState('');
   const [lessonDuration, setLessonDuration] = useState(15);
+
+  // Edit Lesson Modal State
+  const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<any>(null);
+  const [editLessonTitle, setEditLessonTitle] = useState('');
+  const [editLessonVideoUrl, setEditLessonVideoUrl] = useState('');
+  const [editLessonDuration, setEditLessonDuration] = useState(15);
 
   const fetchCourse = React.useCallback(async () => {
     try {
@@ -93,6 +100,74 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     }
   };
 
+  const handleOpenEditLesson = (module: any, lesson: any) => {
+    setEditingLesson({ ...lesson, moduleId: module.id });
+    setEditLessonTitle(lesson.title);
+    setEditLessonVideoUrl(lesson.videoUrl || '');
+    setEditLessonDuration(lesson.duration || 15);
+    setIsEditLessonModalOpen(true);
+  };
+
+  const handleSaveEditLesson = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLesson) return;
+
+    try {
+      const res = await fetch(`/api/modules/${editingLesson.moduleId}/lessons/${editingLesson.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editLessonTitle,
+          videoUrl: editLessonVideoUrl,
+          duration: editLessonDuration,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to update lesson');
+
+      addToast({ type: 'success', title: 'Lesson Updated!' });
+      setIsEditLessonModalOpen(false);
+      setEditingLesson(null);
+      fetchCourse();
+    } catch (err: any) {
+      addToast({ type: 'error', title: 'Error', message: err.message });
+    }
+  };
+
+  const handleDeleteLesson = async (moduleId: string, lessonId: string) => {
+    if (!confirm('Are you sure you want to delete this lesson?')) return;
+
+    try {
+      const res = await fetch(`/api/modules/${moduleId}/lessons/${lessonId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) throw new Error('Failed to delete lesson');
+
+      addToast({ type: 'success', title: 'Lesson Deleted!' });
+      fetchCourse();
+    } catch (err: any) {
+      addToast({ type: 'error', title: 'Error', message: err.message });
+    }
+  };
+
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    if (!confirm('Are you sure you want to delete this assessment?')) return;
+
+    try {
+      const res = await fetch(`/api/courses/${params.id}/assessments/${assessmentId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) throw new Error('Failed to delete assessment');
+
+      addToast({ type: 'success', title: 'Assessment Deleted!' });
+      fetchCourse();
+    } catch (err: any) {
+      addToast({ type: 'error', title: 'Error', message: err.message });
+    }
+  };
+
   const handleSubmitForReview = async () => {
     try {
       const res = await fetch(`/api/courses/${params.id}`, {
@@ -118,15 +193,15 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   if (!course) return <div className="p-8 text-center text-xs text-red-500">Course not found.</div>;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-auto py-4">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
           <button onClick={() => router.push('/instructor/courses')} className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to My Courses
           </button>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900">{course.title}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{course.title}</h1>
             <Badge variant={course.status === 'PUBLISHED' ? 'success' : course.status === 'PENDING_REVIEW' ? 'warning' : 'default'}>
               {course.status}
             </Badge>
@@ -145,13 +220,22 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {/* Course Modules & Lessons */}
+      {/* SECTION 1: Course Modules & Lessons */}
       <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-brand-600" /> Course Modules & Lessons
+          </h2>
+          <Button size="sm" variant="outline" onClick={() => setIsModuleModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-1.5" /> Add Module
+          </Button>
+        </div>
+
         {course.modules.length === 0 ? (
           <Card className="p-12 text-center text-slate-500 border-dashed">
             <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-base font-semibold text-slate-700">No modules in this course yet</h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300">No modules in this course yet</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
               Add your first module (e.g. &quot;Module 1: Getting Started&quot;) to start attaching video lessons.
             </p>
             <Button onClick={() => setIsModuleModalOpen(true)} className="mt-4" size="sm">
@@ -160,9 +244,9 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           </Card>
         ) : (
           course.modules.map((mod: any, idx: number) => (
-            <Card key={mod.id} className="overflow-hidden border-slate-200">
-              <CardHeader className="bg-slate-50 py-3.5 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-bold text-slate-900">
+            <Card key={mod.id} className="overflow-hidden border-slate-200 dark:border-slate-800">
+              <CardHeader className="bg-slate-50 dark:bg-slate-900 py-3.5 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   Module {idx + 1}: {mod.title}
                 </CardTitle>
                 <Button
@@ -177,28 +261,114 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
                 </Button>
               </CardHeader>
 
-              <CardContent className="p-0 divide-y divide-slate-100">
+              <CardContent className="p-0 divide-y divide-slate-100 dark:divide-slate-800">
                 {mod.lessons.length === 0 ? (
                   <p className="p-4 text-xs text-slate-400 italic">No lessons added to this module yet.</p>
                 ) : (
                   mod.lessons.map((lesson: any) => (
-                    <div key={lesson.id} className="p-4 flex items-center justify-between hover:bg-slate-50/60">
+                    <div key={lesson.id} className="p-4 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-900/60">
                       <div className="flex items-center gap-3">
                         <PlayCircle className="w-4 h-4 text-brand-600 shrink-0" />
                         <div>
-                          <p className="text-xs font-semibold text-slate-800">{lesson.title}</p>
-                          <p className="text-[10px] text-slate-500">{lesson.duration} mins • Video: {lesson.videoUrl || 'Default reference'}</p>
+                          <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{lesson.title}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">{lesson.duration} mins • Video: {lesson.videoUrl || 'Default reference'}</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-[10px]">
-                        Lesson
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleOpenEditLesson(mod, lesson)}
+                          className="text-slate-600 hover:text-brand-600 h-8 px-2"
+                        >
+                          <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteLesson(mod.id, lesson.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 h-8 px-2"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
               </CardContent>
             </Card>
           ))
+        )}
+      </div>
+
+      {/* SECTION 2: Course Assessments & Quizzes */}
+      <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <HelpCircle className="w-5 h-5 text-amber-600" /> Assessments & Quizzes
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Create auto-scored assessments to test student knowledge upon completing course modules.
+            </p>
+          </div>
+          <Button onClick={() => router.push(`/instructor/courses/${params.id}/assessments/new`)}>
+            <Plus className="w-4 h-4 mr-1.5" /> Add Assessment
+          </Button>
+        </div>
+
+        {!course.assessments || course.assessments.length === 0 ? (
+          <Card className="p-8 text-center text-slate-500 border-dashed">
+            <FileText className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">No assessments attached yet</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+              Add a quiz with multiple-choice, true/false, or short answer questions to evaluate students.
+            </p>
+            <Button
+              onClick={() => router.push(`/instructor/courses/${params.id}/assessments/new`)}
+              className="mt-3"
+              size="sm"
+              variant="outline"
+            >
+              <Plus className="w-4 h-4 mr-1.5" /> Create First Assessment
+            </Button>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {course.assessments.map((ass: any) => (
+              <Card key={ass.id} className="p-5 space-y-3 border-slate-200 dark:border-slate-800">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{ass.title}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Passing Threshold: <span className="font-semibold text-amber-600">{ass.passingScore}%</span>
+                    </p>
+                  </div>
+                  <Badge variant="info">
+                    {ass.questions ? ass.questions.length : 0} Questions
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => router.push(`/instructor/courses/${params.id}/assessments/${ass.id}/edit`)}
+                  >
+                    <Edit className="w-3.5 h-3.5 mr-1" /> Edit Quiz
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteAssessment(ass.id)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
 
@@ -221,7 +391,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         </form>
       </Modal>
 
-      {/* Lesson Modal */}
+      {/* Add Lesson Modal */}
       <Modal isOpen={isLessonModalOpen} onClose={() => setIsLessonModalOpen(false)} title="Add Lesson to Module">
         <form onSubmit={handleAddLesson} className="space-y-4">
           <Input
@@ -250,6 +420,37 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
               Cancel
             </Button>
             <Button type="submit">Add Lesson</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Lesson Modal */}
+      <Modal isOpen={isEditLessonModalOpen} onClose={() => setIsEditLessonModalOpen(false)} title="Edit Lesson">
+        <form onSubmit={handleSaveEditLesson} className="space-y-4">
+          <Input
+            label="Lesson Title"
+            value={editLessonTitle}
+            onChange={(e) => setEditLessonTitle(e.target.value)}
+            required
+          />
+          <Input
+            label="Video URL / YouTube Embed"
+            value={editLessonVideoUrl}
+            onChange={(e) => setEditLessonVideoUrl(e.target.value)}
+          />
+          <Input
+            label="Duration (in minutes)"
+            type="number"
+            min="1"
+            value={editLessonDuration}
+            onChange={(e) => setEditLessonDuration(parseInt(e.target.value) || 10)}
+            required
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => setIsEditLessonModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Save Changes</Button>
           </div>
         </form>
       </Modal>

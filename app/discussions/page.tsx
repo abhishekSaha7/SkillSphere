@@ -39,32 +39,32 @@ export default async function DiscussionsPage() {
         {discussions.map((disc) => (
           <Card key={disc.id} className="p-6 space-y-4 hover:shadow-md transition-all">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold shrink-0">
+              <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-brand-600 text-white flex items-center justify-center font-bold shrink-0">
                 {disc.author.name[0]}
               </div>
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-slate-900 text-base">{disc.title}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">{disc.title}</h3>
                   {disc.course && <Badge variant="outline">{disc.course.title}</Badge>}
                 </div>
-                <p className="text-xs text-slate-500">
-                  Posted by <strong className="text-slate-700">{disc.author.name}</strong> ({disc.author.role}) • {new Date(disc.createdAt).toLocaleDateString()}
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Posted by <strong className="text-slate-700 dark:text-slate-200">{disc.author.name}</strong> ({disc.author.role}) • {new Date(disc.createdAt).toLocaleDateString()}
                 </p>
-                <p className="text-xs text-slate-700 leading-relaxed pt-2">{disc.content}</p>
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed pt-2">{disc.content}</p>
               </div>
             </div>
 
             {/* Comments */}
             {disc.comments.length > 0 && (
-              <div className="pt-4 border-t border-slate-100 space-y-3 pl-8">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Replies ({disc.comments.length})</h4>
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3 pl-8">
+                <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Replies ({disc.comments.length})</h4>
                 {disc.comments.map((comment) => (
-                  <div key={comment.id} className="p-3 bg-slate-50 rounded-lg text-xs space-y-1 border border-slate-100">
+                  <div key={comment.id} className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs space-y-1 border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">{comment.author.name}</span>
-                      <span className="text-[10px] text-slate-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{comment.author.name}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(comment.createdAt).toLocaleDateString()}</span>
                     </div>
-                    <p className="text-slate-700 leading-relaxed">{comment.content}</p>
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{comment.content}</p>
                   </div>
                 ))}
               </div>

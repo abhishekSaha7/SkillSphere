@@ -61,12 +61,12 @@ export default function NewCoursePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <button onClick={() => router.back()} className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1.5">
+      <button onClick={() => router.back()} className="text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1.5">
         <ArrowLeft className="w-4 h-4" /> Back to Courses
       </button>
 
-      <Card className="border-slate-200 shadow-xl">
-        <CardHeader className="bg-slate-900 text-white p-6 rounded-t-xl">
+      <Card className="border-slate-200 dark:border-slate-800 shadow-xl">
+        <CardHeader className="bg-slate-900 dark:bg-slate-950 text-white p-6 rounded-t-xl">
           <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-brand-400" /> Create New Course
           </CardTitle>
@@ -84,7 +84,7 @@ export default function NewCoursePage() {
             />
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                 Course Description
               </label>
               <textarea
@@ -92,41 +92,41 @@ export default function NewCoursePage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Comprehensive summary of what students will learn in this course..."
-                className="w-full px-3.5 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Category
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
-                  <option value="Web Development">Web Development</option>
-                  <option value="Software Engineering">Software Engineering</option>
-                  <option value="Data Science">Data Science</option>
-                  <option value="Cloud & DevOps">Cloud & DevOps</option>
-                  <option value="Cybersecurity">Cybersecurity</option>
+                  <option value="Web Development" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Web Development</option>
+                  <option value="Software Engineering" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Software Engineering</option>
+                  <option value="Data Science" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Data Science</option>
+                  <option value="Cloud & DevOps" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Cloud & DevOps</option>
+                  <option value="Cybersecurity" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Cybersecurity</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                   Difficulty Level
                 </label>
                 <select
                   value={level}
                   onChange={(e) => setLevel(e.target.value as any)}
-                  className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
-                  <option value="BEGINNER">BEGINNER</option>
-                  <option value="INTERMEDIATE">INTERMEDIATE</option>
-                  <option value="ADVANCED">ADVANCED</option>
+                  <option value="BEGINNER" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">BEGINNER</option>
+                  <option value="INTERMEDIATE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">INTERMEDIATE</option>
+                  <option value="ADVANCED" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">ADVANCED</option>
                 </select>
               </div>
             </div>

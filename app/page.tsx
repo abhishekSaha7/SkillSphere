@@ -260,21 +260,23 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Quick Demo Credentials Footer Banner */}
+      {/* Platform Portal Access Banner */}
       <section className="p-6 bg-slate-900 dark:bg-slate-950 border border-slate-800 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-400" /> Instant Portfolio Demo Access
+            <Sparkles className="w-5 h-5 text-amber-400" /> Ready to Elevate Your Skills?
           </h3>
           <p className="text-xs text-slate-300 mt-0.5">
-            Test as Student, Instructor, Mentor, or Super Admin instantly without setup.
+            Sign in with your role credentials or register a new account to access specialized portals.
           </p>
         </div>
-        <Link href="/login">
-          <Button className="bg-white text-slate-900 hover:bg-slate-100 font-bold">
-            Open Login Demo &rarr;
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/login">
+            <Button className="bg-white text-slate-900 hover:bg-slate-100 font-bold">
+              Sign In to Portal &rarr;
+            </Button>
+          </Link>
+        </div>
       </section>
     </div>
   );
