@@ -11,6 +11,7 @@ export default async function AdminCoursesPage() {
     include: {
       instructor: true,
       modules: { include: { lessons: true } },
+      assessments: { include: { questions: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -18,32 +19,32 @@ export default async function AdminCoursesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Course Review & Approval Queue</h1>
-        <p className="text-xs text-slate-500 mt-1">Review instructor course submissions and control marketplace publishing.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Course Review & Approval Queue</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Review instructor course submissions, preview full curriculum content, and control marketplace publishing.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Platform Courses ({courses.length})</CardTitle>
+          <CardTitle className="text-slate-900 dark:text-white">All Platform Courses ({courses.length})</CardTitle>
         </CardHeader>
-        <CardContent className="p-0 divide-y divide-slate-100">
+        <CardContent className="p-0 divide-y divide-slate-100 dark:divide-slate-800">
           {courses.map((course) => {
             const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
             return (
-              <div key={course.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors">
+              <div key={course.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
                 <div className="space-y-1 max-w-xl">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 text-sm">{course.title}</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">{course.title}</h3>
                     <Badge variant={course.status === 'PUBLISHED' ? 'success' : course.status === 'PENDING_REVIEW' ? 'warning' : 'default'}>
                       {course.status}
                     </Badge>
                   </div>
-                  <p className="text-xs text-slate-500">Instructor: {course.instructor.name} • Category: {course.category} • {totalLessons} lessons • ${course.price}</p>
-                  <p className="text-xs text-slate-600 line-clamp-2 pt-1">{course.description}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Instructor: {course.instructor.name} • Category: {course.category} • {totalLessons} lessons • ${course.price}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 pt-1">{course.description}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <CourseApprovalButtons courseId={course.id} currentStatus={course.status} />
+                  <CourseApprovalButtons course={course} />
                 </div>
               </div>
             );

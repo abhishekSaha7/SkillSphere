@@ -101,7 +101,7 @@ export function Navbar() {
                     <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 capitalize">{session.user.role.toLowerCase()}</p>
                   </div>
                   <button
-                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    onClick={() => signOut({ callbackUrl: '/' })}
                     className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     title="Sign Out"
                   >

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings, Save, Shield } from 'lucide-react';
+import { Settings, Save, Shield, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -9,7 +9,7 @@ import { useUIStore } from '@/store/useUIStore';
 
 export default function AdminSettingsPage() {
   const { addToast } = useUIStore();
-  const [siteName, setSiteName] = useState('SkillSphere');
+  const [siteName] = useState('SkillSphere');
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [paymentProvider, setPaymentProvider] = useState('MOCK');
   const [storageProvider, setStorageProvider] = useState('MOCK');
@@ -38,7 +38,23 @@ export default function AdminSettingsPage() {
         </CardHeader>
         <CardContent className="p-6">
           <form onSubmit={handleSave} className="space-y-4">
-            <Input label="Application Name" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Application Name
+                </label>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full">
+                  <Lock className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Immutable Branding
+                </span>
+              </div>
+              <Input
+                value={siteName}
+                disabled
+                readOnly
+                className="bg-slate-100 dark:bg-slate-800/60 cursor-not-allowed text-slate-700 dark:text-slate-300 font-semibold"
+                helperText="Application Name is locked to 'SkillSphere' by platform security policy."
+              />
+            </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">

@@ -154,14 +154,24 @@ function LoginFormContent() {
           required
         />
 
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="space-y-1">
+          <Input
+            label="Password"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+        </div>
 
         <Button type="submit" className="w-full py-2.5 font-semibold" isLoading={isLoading}>
           Sign In

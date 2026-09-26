@@ -17,7 +17,26 @@ export default function StudentCoursePlayerPage({ params }: { params: { id: stri
   const [enrollment, setEnrollment] = useState<any>(null);
   const [activeLesson, setActiveLesson] = useState<any>(null);
   const [completedLessonIds, setCompletedLessonIds] = useState<string[]>([]);
+  const [certificateInfo, setCertificateInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const checkCertificateEligibility = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/certificates/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId: params.id }),
+      });
+      const data = await res.json();
+      if (res.ok && data.isCompleted) {
+        setCertificateInfo(data);
+      } else {
+        setCertificateInfo(null);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [params.id]);
 
   const fetchWorkspace = React.useCallback(async () => {
     try {
@@ -43,13 +62,15 @@ export default function StudentCoursePlayerPage({ params }: { params: { id: stri
         // Set initial active lesson
         const firstLesson = courseData.modules[0]?.lessons[0];
         setActiveLesson(firstLesson || null);
+
+        checkCertificateEligibility();
       }
     } catch (e) {
       console.error(e);
     } finally {
       setIsLoading(false);
     }
-  }, [params.id]);
+  }, [params.id, checkCertificateEligibility]);
 
   useEffect(() => {
     fetchWorkspace();
@@ -86,11 +107,11 @@ export default function StudentCoursePlayerPage({ params }: { params: { id: stri
     }
   };
 
-  if (isLoading) return <div className="p-8 text-center text-xs text-slate-500">Loading learning environment...</div>;
+  if (isLoading) return <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">Loading learning environment...</div>;
   if (!course || !enrollment) {
     return (
       <div className="p-8 text-center space-y-4">
-        <p className="text-sm font-semibold text-slate-700">You are not enrolled in this course.</p>
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">You are not enrolled in this course.</p>
         <Button onClick={() => router.push(`/courses/${params.id}`)}>View Course Landing Page</Button>
       </div>
     );
@@ -103,24 +124,50 @@ export default function StudentCoursePlayerPage({ params }: { params: { id: stri
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <button onClick={() => router.push('/student/courses')} className="text-xs font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 mb-1">
+          <button onClick={() => router.push('/student/courses')} className="text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 mb-1">
             <ArrowLeft className="w-4 h-4" /> Back to Enrolled Courses
           </button>
-          <h1 className="text-xl font-bold text-slate-900">{course.title}</h1>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{course.title}</h1>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <div className="text-xs font-semibold text-slate-500">Overall Progress</div>
-            <div className="text-sm font-extrabold text-brand-600">{progressPercent}% Completed</div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Overall Progress</div>
+            <div className="text-sm font-extrabold text-brand-600 dark:text-brand-400">{progressPercent}% Completed</div>
           </div>
-          <div className="w-24 bg-slate-200 h-2.5 rounded-full overflow-hidden">
-            <div className="bg-brand-600 h-full transition-all duration-300" style={{ width: `${progressPercent}%` }} />
+          <div className="w-24 bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+            <div className="bg-brand-600 dark:bg-brand-400 h-full transition-all duration-300" style={{ width: `${progressPercent}%` }} />
           </div>
         </div>
       </div>
+
+      {/* Completion & Certificate Banner */}
+      {certificateInfo && (
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Award className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <Badge variant="success" className="bg-emerald-700 text-white">Course Completed</Badge>
+                <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">100% Course Requirements Fulfilled</span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                Congratulations! You have earned your official SkillSphere Certificate of Completion.
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() => router.push(`/certificates/verify/${certificateInfo.certificateCode}`)}
+            className="bg-emerald-600 hover:bg-emerald-700 font-bold shrink-0 shadow-sm"
+          >
+            <Award className="w-4 h-4 mr-2" /> Download Certificate
+          </Button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Video & Content Viewer */}
